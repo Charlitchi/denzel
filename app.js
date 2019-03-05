@@ -60,3 +60,12 @@ app.get("/movies", (request, response) => {
     });
 
 });
+
+app.get("/movies/:id", (request, response) => {
+    collection.findOne({ "id": request.params.id }, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send(result);
+    });
+});
