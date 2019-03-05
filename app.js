@@ -2,6 +2,9 @@ const Express = require("express");
 const BodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const IMBD = require("./src/imdb");
+const Random = require("random-js").Random;
+const random = new Random()//MersenneTwister19937.autoSeed());
+
 const ObjectId = require("mongodb").ObjectID;
 
 const DENZEL_IMDB_ID = 'nm0000243';
@@ -9,6 +12,7 @@ const DENZEL_IMDB_ID = 'nm0000243';
 const CONNECTION_URL = "mongodb+srv://firstUser:user@moviecluster-scowa.gcp.mongodb.net/test?retryWrites=true";
 
 const DATABASE_NAME = "moviesDB";
+
 
 var app = Express();
 
@@ -28,7 +32,6 @@ app.listen(3000, () => {
     });
 });
 
-
 app.get("/movies/populate", async (request, response) => {
     const movies = await IMBD(DENZEL_IMDB_ID);
     collection.insert(movies, (error, result) => {
@@ -42,6 +45,17 @@ app.get("/movies/populate", async (request, response) => {
             return response.status(500).send(error);
         }
         var messageToSend = { "total":result.length }
+        response.send(messageToSend);
+    });
+
+});
+
+app.get("/movies", (request, response) => {
+    collection.find({ metascore: { $gt: 70 }}).toArray((error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        var messageToSend = result[random.integer(0, result.length-1)]
         response.send(messageToSend);
     });
 
