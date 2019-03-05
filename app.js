@@ -37,4 +37,12 @@ app.get("/movies/populate", async (request, response) => {
         }
         response.send(result.result);
     });
+    collection.find({}).toArray((error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        var messageToSend = { "total":result.length }
+        response.send(messageToSend);
+    });
+
 });
