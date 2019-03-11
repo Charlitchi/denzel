@@ -19,28 +19,29 @@ var app = Express();
 app.use(BodyParser.json());
 app.use(BodyParser.urlencoded({ extended: true }));
 
-var database, collection;
+var database, collectionMovie, collectionReview;
 
-app.listen(3000, () => {
+app.listen(9292, () => {
     MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true }, (error, client) => {
         if(error) {
             throw error;
         }
         database = client.db(DATABASE_NAME);
-        collection = database.collection("movies");
+        collectionMovie = database.collection("movies");
+        collectionReview = database.collection("reviews");
         console.log("Connected to `" + DATABASE_NAME + "`!");
     });
 });
 
 app.get("/movies/populate", async (request, response) => {
     const movies = await IMBD(DENZEL_IMDB_ID);
-    collection.insert(movies, (error, result) => {
+    collectionMovie.insert(movies, (error, result) => {
         if(error) {
             return response.status(500).send(error);
         }
         response.send(result.result);
     });
-    collection.find({}).toArray((error, result) => {
+    collectionMovie.find({}).toArray((error, result) => {
         if(error) {
             return response.status(500).send(error);
         }
@@ -51,7 +52,7 @@ app.get("/movies/populate", async (request, response) => {
 });
 
 app.get("/movies", (request, response) => {
-    collection.find({ metascore: { $gt: 70 }}).toArray((error, result) => {
+    collectionMovie.find({ metascore: { $gt: 70 }}).toArray((error, result) => {
         if(error) {
             return response.status(500).send(error);
         }
@@ -62,10 +63,34 @@ app.get("/movies", (request, response) => {
 });
 
 app.get("/movies/:id", (request, response) => {
-    collection.findOne({ "id": request.params.id }, (error, result) => {
+    collectionMovie.findOne({ "id": request.params.id }, (error, result) => {
         if(error) {
             return response.status(500).send(error);
         }
         response.send(result);
+    });
+});
+
+// à voir
+app.get("/movies/search", (request, response) => {
+    console.log(request.query.limit);
+    console.log('Bonjour');
+    console.log(request.query.metascore);
+    response.send('Bonjour');
+    /*collectionMovie.findOne({ "id": request.params.id }, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send(result);
+    });*/
+});
+
+// à revoir
+app.post("/movies/:id", (request, response) => {
+    collectionReview.insert( request.body, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send(result.result);
     });
 });
